@@ -1,0 +1,44 @@
+import torch
+import torch.nn as nn
+
+# Astuce : on donne le modulo comme feature suplémentaire
+X = torch.tensor([
+    [0., 0.], [1., 1.], [2., 0.], [3., 1.], [4., 0.],
+    [5., 1.], [6., 0.], [7., 1.], [8., 0.], [9., 1.]
+])
+
+# Labels : 0 = pair, i = impair
+Y = torch.tensor([
+    [0.], [1.], [0.], [1.], [0.],
+    [1.], [0.], [1.], [0.], [1.]
+])
+
+# Le réseau de neurones
+model = nn.Sequential(
+    nn.Linear(2, 8),    # Couche 1: 1 entrée -> 8 neurones
+    nn.ReLU(),          # Activation
+    nn.Linear(8, 1),    # Couche 2 : neurones -> 1 sortie
+    nn.Sigmoid()        # Sortie entre 0 et 1
+)
+
+# Fonction de perte et optimiseur
+criterion = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+# Entraînement 
+for epoch in range(1000):
+  prediction = model(X)
+  loss = criterion(prediction, Y)
+  optimizer.zero_grad()
+  loss.backward()
+  optimizer.step()
+
+  if epoch % 200 == 0:
+    print(f"Epoch {epoch} | Perte: {loss.item():.4f}")
+
+# Test
+print("\n--- Test ---")
+for i in range(10):
+  inp = torch.tensor([[float(i), float(i % 2)]])
+  pred = model(inp)
+  print(f"{i} -> {'Impair' if pred.item() > 0.5 else 'Pair'}")
